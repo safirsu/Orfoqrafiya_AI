@@ -522,6 +522,49 @@ break;
 
 });
 
+board.addEventListener("touchend",(e)=>{
+
+
+    e.preventDefault();
+
+
+    let touchEndX = e.changedTouches[0].clientX;
+    let touchEndY = e.changedTouches[0].clientY;
+
+
+    let diffX = touchEndX - touchStartX;
+    let diffY = touchEndY - touchStartY;
+
+
+
+    if(Math.abs(diffX) > Math.abs(diffY)){
+
+
+        if(diffX > 40){
+            move("right");
+        }
+
+        else if(diffX < -40){
+            move("left");
+        }
+
+
+    } else {
+
+
+        if(diffY > 40){
+            move("down");
+        }
+
+        else if(diffY < -40){
+            move("up");
+        }
+
+
+    }
+
+
+},{passive:false});
 
 
 
@@ -530,35 +573,6 @@ break;
 
 
 
-/* ==========================
-   TELEFON SWIPE İDARƏSİ
-========================== */
-
-
-let touchStartX = 0;
-let touchStartY = 0;
-
-
-
-document.addEventListener("touchstart",(e)=>{
-
-
-touchStartX =
-e.changedTouches[0].screenX;
-
-
-touchStartY =
-e.changedTouches[0].screenY;
-
-
-});
-
-
-
-
-
-
-document.addEventListener("touchend",(e)=>{
 
 
 let touchEndX =
