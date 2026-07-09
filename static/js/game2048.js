@@ -42,7 +42,6 @@ draw();
 
 
 
-
 function addTile(){
 
 
@@ -83,9 +82,6 @@ Math.random()<0.9 ? 2 : 4;
 
 
 }
-
-
-
 
 
 
@@ -144,17 +140,7 @@ best
 }
 
 
-
-}
-
-
-
-
-
-
-
-
-function slide(row){
+}function slide(row){
 
 
 let arr=row.filter(
@@ -219,7 +205,6 @@ return result;
 
 
 
-
 function moveLeft(){
 
 
@@ -251,7 +236,6 @@ return moved;
 
 
 }
-
 
 
 
@@ -294,7 +278,6 @@ grid=newGrid;
 
 
 }
-
 
 
 
@@ -351,8 +334,6 @@ rotateClockwise();
 
 
 
-
-
 if(direction==="up"){
 
 
@@ -371,8 +352,6 @@ rotateClockwise();
 
 
 }
-
-
 
 
 
@@ -401,9 +380,6 @@ rotateClockwise();
 
 
 
-
-
-
 if(moved){
 
 
@@ -426,27 +402,18 @@ alert(
 "Game Over! Skor: "+score
 );
 
+
 },100);
 
 
 }
 
 
-}
-
-
 
 }
 
 
-
-
-
-
-
-
-
-function checkGameOver(){
+}function checkGameOver(){
 
 
 for(let r=0;r<4;r++){
@@ -492,6 +459,10 @@ return true;
 
 
 
+
+/* ==========================
+   KLAVİATURA İDARƏSİ
+========================== */
 
 
 document.addEventListener("keydown",(e)=>{
@@ -557,12 +528,140 @@ break;
 
 
 
+
+
+/* ==========================
+   TELEFON SWIPE İDARƏSİ
+========================== */
+
+
+let touchStartX = 0;
+let touchStartY = 0;
+
+
+
+document.addEventListener("touchstart",(e)=>{
+
+
+touchStartX =
+e.changedTouches[0].screenX;
+
+
+touchStartY =
+e.changedTouches[0].screenY;
+
+
+});
+
+
+
+
+
+
+document.addEventListener("touchend",(e)=>{
+
+
+let touchEndX =
+e.changedTouches[0].screenX;
+
+
+let touchEndY =
+e.changedTouches[0].screenY;
+
+
+
+let diffX =
+touchEndX - touchStartX;
+
+
+let diffY =
+touchEndY - touchStartY;
+
+
+
+if(Math.abs(diffX) > Math.abs(diffY)){
+
+
+
+if(diffX > 50){
+
+
+move("right");
+
+
+}
+
+
+else if(diffX < -50){
+
+
+move("left");
+
+
+}
+
+
+
+}
+
+else{
+
+
+
+if(diffY > 50){
+
+
+move("down");
+
+
+}
+
+
+
+else if(diffY < -50){
+
+
+move("up");
+
+
+}
+
+
+
+}
+
+
+
+});
+
+
+
+
+
+/* ==========================
+   YENİDƏN BAŞLAT
+========================== */
+
+
+if(restart){
+
+
 restart.addEventListener(
 "click",
 startGame
 );
 
 
+}
+
+
+
+
+
+
+/* ==========================
+   OYUNU BAŞLAT
+========================== */
 
 
 startGame();

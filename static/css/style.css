@@ -2306,3 +2306,56 @@ body{
     var(--accent);
 
 }
+
+@media (max-width:600px){
+
+body{
+    overflow-x:hidden;
+}
+
+
+#board{
+
+    width:92vw;
+    height:92vw;
+
+    max-width:420px;
+    max-height:420px;
+
+    padding:8px;
+    gap:8px;
+
+}
+
+
+.tile{
+
+    font-size:7vw;
+    border-radius:12px;
+
+}
+
+
+.game-card{
+
+    padding:15px;
+
+}
+
+
+.game-header{
+
+    flex-direction:column;
+    gap:15px;
+
+}
+
+
+.score-box{
+
+    width:100%;
+    text-align:center;
+
+}
+
+}
