@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="az">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Orfoqrafiya AI</title>
+
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/style.css') }}">
+
+
+</head>
+
+
+<body class="theme-aurora">
+
+
+<div class="bg">
+
+<div class="blur b1"></div>
+<div class="blur b2"></div>
+<div class="blur b3"></div>
+
+</div>
+
+
+
+
+<header>
+
+<div class="container">
+
+
+<nav class="navbar">
+
+
+<a href="/" class="logo">
+
+
+<div class="logo-icon">
+
+<i class="fa-solid fa-brain"></i>
+
+</div>
+
+
+<div class="logo-text">
+
+<h2>
+Orfoqrafiya AI
+</h2>
+
+
+<span>
+Azərbaycan Dilinin Süni İntellekti
+</span>
+
+
+</div>
+
+
+</a>
+
+
+
+
+
+<ul>
+
+
+<li>
+<a href="/">
+Ana Səhifə
+</a>
+</li>
+
+
+<li>
+<a href="/luget">
+Lüğət
+</a>
+</li>
+
+
+<li>
+<a href="#ai">
+AI
+</a>
+</li>
+
+
+<li>
+<a href="#stats">
+Statistika
+</a>
+</li>
+
+
+<li>
+<a href="{{ url_for('oyun') }}">
+🎮 Oyunlar
+</a>
+</li>
+
+
+</ul>
+
+
+
+
+<div class="nav-buttons">
+
+
+<button class="theme">
+
+<i class="fa-solid fa-palette"></i>
+
+</button>
+
+
+</div>
+
+
+
+</nav>
+
+
+</div>
+
+
+</header>
+
+
+
+
+
+
+<main>
+
+
+
+
+
+<section class="hero">
+
+
+<div class="container hero-grid">
+
+
+
+
+
+<div class="hero-left">
+
+
+
+
+
+<div class="badge">
+
+<i class="fa-solid fa-sparkles"></i>
+
+
+<span>
+Azərbaycan dili üçün AI Platforması
+</span>
+
+
+</div>
+
+
+
+
+
+
+
+<h1>
+
+Azərbaycan dilini
+
+<span>
+AI
+</span>
+
+ilə düzgün yaz.
+
+</h1>
+
+
+
+
+
+<p>
+
+Sözlərin düzgün yazılışını yoxla,
+səhvləri tap və AI köməyi al.
+
+</p>
+
+
+
+
+
+
+
+
+<div class="search-box">
+
+
+<input
+
+id="word"
+
+type="text"
+
+placeholder="Sözü buraya yazın...">
+
+
+
+
+
+<button id="checkBtn">
+
+
+<i class="fa-solid fa-wand-magic-sparkles"></i>
+
+Yoxla
+
+
+</button>
+
+
+
+</div>
+
+
+
+
+
+
+
+
+<div class="quick-result">
+
+
+
+<div id="result">
+
+
+<div class="empty">
+
+
+<i class="fa-solid fa-keyboard"></i>
+
+
+<h3>
+Yoxlama gözlənilir
+</h3>
+
+
+<p>
+Sözü yazın və Yoxla düyməsinə basın.
+</p>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+<div class="word-actions">
+
+
+<button id="favoriteBtn">
+
+⭐ Sevimliyə əlavə et
+
+</button>
+
+
+
+<button id="aiSearchBtn">
+
+🤖 AI ilə analiz et
+
+</button>
+
+
+
+</div>
+
+
+
+
+
+<div id="aiResult"></div>
+
+
+
+
+</div>
+
+
+
+
+
+
+
+
+<div class="hero-stats">
+
+
+
+<div class="stat">
+
+<h2>
+80K+
+</h2>
+
+
+<p>
+Söz Bazası
+</p>
+
+
+</div>
+
+
+
+
+
+
+<div class="stat">
+
+<h2 id="checkedCount">
+0
+</h2>
+
+
+<p>
+Yoxlanılıb
+</p>
+
+
+</div>
+
+
+
+
+
+
+<div class="stat">
+
+<h2>
+AI
+</h2>
+
+
+<p>
+Dəstək
+</p>
+
+
+</div>
+
+
+
+
+</div>
+
+
+
+
+
+
+
+</div>
+
+
+
+
+
+<div class="hero-right">
+
+
+<div class="ai-card">
+
+
+
+<div class="status">
+
+<span class="dot"></span>
+
+AI Online
+
+</div>
+
+
+
+
+<h2>
+Azərbaycan Dili Modeli
+</h2>
+
+
+
+
+<p>
+
+Sözləri analiz edən ağıllı orfoqrafiya sistemi.
+
+</p>
+
+
+
+
+
+
+<div class="brain-circle">
+
+
+<div class="brain">
+
+<i class="fa-solid fa-brain"></i>
+
+</div>
+
+
+</div>
+
+
+
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+
+</div>
+
+
+</section>
+<section class="favorites-section">
+
+
+<div class="container">
+
+
+<div class="section-title">
+
+
+<h2>
+⭐ Sevimli sözlər
+</h2>
+
+
+<p>
+Öyrənmək istədiyiniz sözləri burada saxlayın.
+</p>
+
+
+</div>
+
+
+
+
+<div id="favoritesList">
+
+
+<p>
+Hələ sevimli söz yoxdur.
+</p>
+
+
+</div>
+
+
+
+</div>
+
+
+</section>
+
+
+
+
+
+
+
+
+
+<section class="stats" id="stats">
+
+
+<div class="container">
+
+
+
+<div class="section-title">
+
+
+<h2>
+📊 Platforma Statistikası
+</h2>
+
+
+<p>
+Azərbaycan dili üçün hazırlanmış AI sistemi.
+</p>
+
+
+</div>
+
+
+
+
+
+
+<div class="stats-grid">
+
+
+
+
+
+<div class="stat-card">
+
+
+<i class="fa-solid fa-book"></i>
+
+
+<h2>
+80K+
+</h2>
+
+
+<p>
+Söz Bazası
+</p>
+
+
+</div>
+
+
+
+
+
+
+
+<div class="stat-card">
+
+
+<i class="fa-solid fa-spell-check"></i>
+
+
+<h2 id="checkedCount2">
+0
+</h2>
+
+
+<p>
+Yoxlanılan söz
+</p>
+
+
+</div>
+
+
+
+
+
+
+
+<div class="stat-card">
+
+
+<i class="fa-solid fa-circle-check"></i>
+
+
+<h2 id="correctCount">
+0
+</h2>
+
+
+<p>
+Düzgün sözlər
+</p>
+
+
+</div>
+
+
+
+
+
+
+
+<div class="stat-card">
+
+
+<i class="fa-solid fa-circle-xmark"></i>
+
+
+<h2 id="wrongCount">
+0
+</h2>
+
+
+<p>
+Səhv sözlər
+</p>
+
+
+</div>
+
+
+
+
+
+
+
+<div class="stat-card">
+
+
+<i class="fa-solid fa-robot"></i>
+
+
+<h2 id="aiCount">
+0
+</h2>
+
+
+<p>
+AI yoxlamaları
+</p>
+
+
+</div>
+
+
+
+
+
+
+
+<div class="stat-card">
+
+
+<i class="fa-solid fa-bolt"></i>
+
+
+<h2>
+24/7
+</h2>
+
+
+<p>
+Aktiv sistem
+</p>
+
+
+</div>
+
+
+
+
+
+</div>
+
+
+</div>
+
+
+</section>
+
+
+
+
+
+
+
+
+
+
+<section class="features" id="ai">
+
+
+<div class="container">
+
+
+
+<div class="section-title">
+
+
+<h2>
+İmkanlar
+</h2>
+
+
+<p>
+Orfoqrafiya AI ilə daha rahat yaz.
+</p>
+
+
+</div>
+
+
+
+
+
+
+
+<div class="features-grid">
+
+
+
+
+
+
+<div class="feature">
+
+
+<div class="feature-icon">
+
+<i class="fa-solid fa-spell-check"></i>
+
+</div>
+
+
+
+<h3>
+Dəqiq yoxlama
+</h3>
+
+
+
+<p>
+Sözlərin düzgün yazılışını saniyələr ərzində yoxlayır.
+</p>
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<div class="feature">
+
+
+<div class="feature-icon">
+
+<i class="fa-solid fa-lightbulb"></i>
+
+</div>
+
+
+
+<h3>
+Ağıllı təklif
+</h3>
+
+
+
+<p>
+Səhv yazılmış sözlər üçün düzgün variantlar göstərir.
+</p>
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<div class="feature">
+
+
+<div class="feature-icon">
+
+<i class="fa-solid fa-robot"></i>
+
+</div>
+
+
+
+<h3>
+AI köməkçi
+</h3>
+
+
+
+<p>
+Tapılmayan sözləri analiz etməyə kömək edir.
+</p>
+
+
+
+</div>
+
+
+
+
+
+</div>
+
+
+
+</div>
+
+
+</section>
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+</body>
+</html>

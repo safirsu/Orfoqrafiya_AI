@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="az">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>AI Oyun Mərkəzi</title>
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/style.css') }}">
+
+</head>
+
+
+<body>
+
+
+<a href="/" class="back-home">
+← Ana səhifə
+</a>
+
+
+
+<section class="games-hero">
+
+<div class="games-title">
+
+<span>🧠 AI Oyun Mərkəzi</span>
+
+<h1>Beynini məşq etdir</h1>
+
+<p>
+Söz biliyini yoxla və 2048 ilə məntiq bacarıqlarını inkişaf etdir.
+</p>
+
+</div>
+
+</section>
+
+
+
+
+
+<section class="games-container">
+
+
+
+<!-- OYUNCU -->
+
+<div class="game-card">
+
+<h2>👤 Oyunçu</h2>
+
+<input 
+id="playerName"
+type="text"
+placeholder="Adını yaz">
+
+</div>
+
+
+
+
+
+<!-- 2048 -->
+
+
+<div class="game-card">
+
+
+<div class="game-header">
+
+<h2>🔢 2048</h2>
+
+
+<div class="score-box">
+
+Skor:
+<span id="score">
+0
+</span>
+
+</div>
+
+
+</div>
+
+
+
+<div id="board"></div>
+
+
+
+<button id="restart2048">
+Yeni oyun
+</button>
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<!-- SÖZ OYUNU -->
+
+
+<div class="game-card word-card">
+
+
+<div class="game-header">
+
+<h2>
+🔤 Söz Oyunu
+</h2>
+
+
+<div class="score-box">
+
+Bal:
+<span id="wordScore">
+0
+</span>
+/
+100
+
+</div>
+
+
+</div>
+
+
+
+
+
+<div class="word-area">
+
+
+<p>
+Qarışıq hərflərdən düzgün sözü tap:
+</p>
+
+
+
+<h3 id="scrambledWord">
+-
+</h3>
+
+
+
+
+<input
+
+id="wordInput"
+
+type="text"
+
+placeholder="Cavabı yaz">
+
+
+<br>
+
+
+<button id="checkWord">
+Yoxla
+</button>
+
+
+
+<button id="nextWord">
+Növbəti sual
+</button>
+
+
+
+
+<p id="wordMessage"></p>
+
+
+<p id="correctWord"></p>
+
+
+<p id="gameResult"></p>
+
+
+
+<p>
+Sual:
+<span id="questionNumber">
+1
+</span>
+/
+10
+</p>
+
+
+
+</div>
+
+
+
+</div>
+
+
+
+</section>
+
+
+
+
+
+
+
+
+
+<!-- LİDER TABLOSU -->
+
+
+<section class="leaderboard">
+
+
+<h2>
+🏆 Lider Tablosu
+</h2>
+
+
+
+<div class="leader-columns">
+
+
+
+<div class="leader-box">
+
+
+<h3>
+🔢 2048
+</h3>
+
+
+<table>
+
+
+<tr>
+
+<th>
+Ad
+</th>
+
+<th>
+Bal
+</th>
+
+</tr>
+
+
+
+<tbody id="leader2048">
+
+
+<tr>
+
+<td>
+-
+</td>
+
+<td>
+0
+</td>
+
+</tr>
+
+
+</tbody>
+
+
+</table>
+
+
+</div>
+
+
+
+
+
+
+
+<div class="leader-box">
+
+
+<h3>
+🔤 Söz Oyunu
+</h3>
+
+
+
+<table>
+
+
+<tr>
+
+<th>
+Ad
+</th>
+
+
+<th>
+Bal
+</th>
+
+
+</tr>
+
+
+
+<tbody id="leaderWord">
+
+
+<tr>
+
+<td>
+-
+</td>
+
+<td>
+0
+</td>
+
+</tr>
+
+
+</tbody>
+
+
+</table>
+
+
+
+</div>
+
+
+
+</div>
+
+
+</section>
+
+
+
+
+
+
+
+
+<script src="{{ url_for('static', filename='js/game2048.js') }}"></script>
+
+<script src="{{ url_for('static', filename='js/wordgame.js') }}"></script>
+
+
+</body>
+
+
+<div class="bg">
+
+<div class="blur b1"></div>
+
+<div class="blur b2"></div>
+
+<div class="blur b3"></div>
+
+</div>
+
+
+</html>

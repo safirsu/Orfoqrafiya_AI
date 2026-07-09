@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="az">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Lüğət | Orfoqrafiya AI</title>
+
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/style.css') }}">
+
+
+<style>
+
+
+.dictionary-box{
+
+max-height:500px;
+
+overflow-y:auto;
+
+padding-right:10px;
+
+margin-top:20px;
+
+}
+
+
+
+.dictionary-box::-webkit-scrollbar{
+
+width:8px;
+
+}
+
+
+
+.dictionary-box::-webkit-scrollbar-thumb{
+
+border-radius:10px;
+
+background:#777;
+
+}
+
+
+
+
+.word-item{
+
+padding:14px;
+
+margin:10px 0;
+
+background:rgba(255,255,255,0.08);
+
+border-radius:14px;
+
+cursor:pointer;
+
+transition:.3s;
+
+}
+
+
+
+.word-item:hover{
+
+transform:translateX(6px);
+
+background:rgba(255,255,255,0.15);
+
+}
+
+
+
+.search-box input{
+
+width:100%;
+
+}
+
+
+
+</style>
+
+
+</head>
+
+
+
+<body class="theme-aurora">
+
+
+
+<a href="/" class="back-home">
+
+← Ana səhifə
+
+</a>
+
+
+
+
+
+<section class="hero">
+
+
+<div class="container">
+
+
+
+
+
+<div class="section-title">
+
+
+<h1>
+
+📚 Azərbaycan Lüğəti
+
+</h1>
+
+
+
+<p>
+
+Orfoqrafiya AI söz bazasında axtarış et.
+
+</p>
+
+
+</div>
+
+
+
+
+
+
+
+<div class="search-box">
+
+
+<input
+
+id="dictionaryInput"
+
+type="text"
+
+placeholder="Söz axtarın..."
+
+autocomplete="off"
+
+>
+
+
+</div>
+
+
+
+
+
+
+
+<div class="quick-result">
+
+
+<div id="dictionaryResult">
+
+
+<div class="empty">
+
+
+<h3>
+
+🔎 Axtarış gözlənilir
+
+</h3>
+
+
+<p>
+
+Söz yazmağa başlayın.
+
+</p>
+
+
+</div>
+
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+
+
+<div class="stats-grid">
+
+
+
+<div class="stat-card">
+
+
+<h2 id="wordCount">
+
+0
+
+</h2>
+
+
+<p>
+
+Ümumi söz sayı
+
+</p>
+
+
+</div>
+
+
+
+
+<div class="stat-card">
+
+
+<h2>
+
+AI
+
+</h2>
+
+
+<p>
+
+Ağıllı analiz
+
+</p>
+
+
+</div>
+
+
+
+
+<div class="stat-card">
+
+
+<h2>
+
+✓
+
+</h2>
+
+
+<p>
+
+Düzgün yazılış
+
+</p>
+
+
+</div>
+
+
+
+
+</div>
+
+
+
+
+
+</div>
+
+
+</section>
+
+
+
+
+
+
+
+
+
+<script>
+
+
+const input =
+document.getElementById(
+"dictionaryInput"
+);
+
+
+
+const result =
+document.getElementById(
+"dictionaryResult"
+);
+
+
+
+const count =
+document.getElementById(
+"wordCount"
+);
+
+
+
+
+
+
+
+async function searchWord(){
+
+
+
+let value =
+input.value.trim();
+
+
+
+
+let response =
+await fetch(
+"/api/dictionary?q="
++
+value
+);
+
+
+
+
+let data =
+await response.json();
+
+
+
+
+count.innerHTML =
+data.count;
+
+
+
+
+
+
+
+if(value===""){
+
+
+
+result.innerHTML=`
+
+<div class="empty">
+
+
+<h3>
+
+🔎 Axtarış gözlənilir
+
+</h3>
+
+
+<p>
+
+Söz yazmağa başlayın.
+
+</p>
+
+
+</div>
+
+`;
+
+return;
+
+}
+
+
+
+
+
+if(data.results.length===0){
+
+
+
+result.innerHTML=`
+
+<div class="error-box">
+
+
+<h3>
+
+❌ Söz tapılmadı
+
+</h3>
+
+
+<p>
+
+Bu söz bazada yoxdur.
+
+AI analiz əlavə edilə bilər.
+
+</p>
+
+
+</div>
+
+`;
+
+return;
+
+
+}
+
+
+
+
+
+
+
+result.innerHTML=`
+
+<div class="success-box">
+
+
+<h3>
+
+📚 Tapılan sözlər:
+
+${data.results.length}
+
+</h3>
+
+
+
+<div class="dictionary-box">
+
+
+
+${
+
+data.results.map(
+
+word=>`
+
+<div class="word-item">
+
+✅ ${word}
+
+</div>
+
+
+`
+
+).join("")
+
+
+}
+
+
+
+</div>
+
+
+
+</div>
+
+`;
+
+
+
+}
+
+
+
+
+
+
+
+input.addEventListener(
+
+"input",
+
+searchWord
+
+);
+
+
+
+
+
+</script>
+
+
+
+</body>
+<div class="bg">
+
+<div class="blur b1"></div>
+<div class="blur b2"></div>
+<div class="blur b3"></div>
+
+</div>
+
+</html>
