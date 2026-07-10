@@ -27,6 +27,15 @@ app = Flask(__name__)
 
 
 # ======================================
+# OYUNLAR BLUEPRINT
+# ======================================
+
+from games.game2048 import game2048_bp
+
+app.register_blueprint(game2048_bp)
+
+
+# ======================================
 # PATHLAR
 # ======================================
 
@@ -132,7 +141,6 @@ checked_count = 0
 game_count = 0
 
 
-
 # ======================================
 # SƏHİFƏLƏR
 # ======================================
@@ -158,14 +166,6 @@ def oyun():
 
     return render_template(
         "oyun.html"
-    )
-
-
-@app.route("/2048")
-def game2048():
-
-    return render_template(
-        "2048.html"
     )
 # ======================================
 # OYUN API
@@ -322,11 +322,9 @@ def yoxla():
 @app.route("/ai_axtar", methods=["POST"])
 def ai_axtar():
 
-
     data = request.get_json(
         silent=True
     ) or {}
-
 
 
     word = data.get(
@@ -370,11 +368,9 @@ def ai_axtar():
 
     try:
 
-
         response = client.chat.completions.create(
 
             model="gpt-4o-mini",
-
 
             messages=[
 
@@ -418,15 +414,12 @@ Format:
 
             ],
 
-
             temperature=0.2
 
         )
 
 
-
         answer = response.choices[0].message.content
-
 
 
         cleaned = (
@@ -442,15 +435,12 @@ Format:
         )
 
 
-
         return jsonify(
             json.loads(cleaned)
         )
 
 
-
     except Exception as e:
-
 
         print(
             "AI ERROR:",
@@ -469,7 +459,9 @@ Format:
             "example": "-"
 
         })
-    
+
+
+
 # ======================================
 # FAVORİLƏR API
 # ======================================
@@ -531,7 +523,6 @@ def favori_elave():
 
 
 
-
 @app.route("/favori_sil", methods=["POST"])
 def favori_sil():
 
@@ -555,7 +546,6 @@ def favori_sil():
             FAVORITE_FILE,
             FAVORITES
         )
-
 
 
     return jsonify({
