@@ -1,716 +1,857 @@
 document.addEventListener("DOMContentLoaded", () => {
+
 "use strict";
 
+
 /*======================================
-  DOM ELEMENTLƏRİ
+ ELEMENTLƏR
 ======================================*/
 
-const $ = (id) => document.getElementById(id);
+const $ = (id) =>
+    document.getElementById(id);
+
 
 const elements = {
 
     wordInput: $("word"),
+
     checkBtn: $("checkBtn"),
+
     result: $("result"),
 
-    favoriteBtn: $("favoriteBtn"),
-    favoritesList: $("favoritesList"),
-
     aiSearchBtn: $("aiSearchBtn"),
+
     aiResult: $("aiResult"),
 
+    favoriteBtn: $("favoriteBtn"),
+
+    favoritesList: $("favoritesList"),
+
     checkedCount: $("checkedCount"),
+
     checkedCount2: $("checkedCount2"),
+
     correctCount: $("correctCount"),
+
     wrongCount: $("wrongCount"),
+
     aiCount: $("aiCount")
 
 };
 
+
+
 /*======================================
-  STORAGE
+ STORAGE
 ======================================*/
 
 const Storage = {
 
-    get(key, defaultValue){
+
+    get(key, def){
+
 
         try{
 
-            const value = localStorage.getItem(key);
 
-            return value
-                ? JSON.parse(value)
-                : defaultValue;
+            const data =
+                localStorage.getItem(key);
 
-        }catch(error){
 
-            console.warn("Storage read error:", error);
+            return data
+                ? JSON.parse(data)
+                : def;
 
-            return defaultValue;
+
+        }catch{
+
+
+            return def;
 
         }
 
     },
 
+
+
     set(key,value){
 
-        try{
 
-            localStorage.setItem(
-                key,
-                JSON.stringify(value)
-            );
+        localStorage.setItem(
 
-        }catch(error){
+            key,
 
-            console.warn("Storage write error:", error);
+            JSON.stringify(value)
 
-        }
+        );
 
     }
+
 
 };
 
-/*======================================
-  STATİSTİKA
-======================================*/
 
-let stats = Storage.get("stats",{
 
-    checked:0,
-    correct:0,
-    wrong:0,
-    ai:0
-
-});
 
 /*======================================
-  ANİMASİYA
+ STATİSTİKA
 ======================================*/
 
-function pulse(element){
 
-    if(!element) return;
+let stats = Storage.get(
 
-    element.classList.remove("pulse");
+    "stats",
 
-    void element.offsetWidth;
+    {
 
-    element.classList.add("pulse");
+        checked:0,
 
-}
+        correct:0,
 
-/*======================================
-  STATİSTİKANI YENİLƏ
-======================================*/
+        wrong:0,
+
+        ai:0
+
+    }
+
+);
+
+
+
 
 function updateStats(){
 
-    const mapping = [
 
-        [elements.checkedCount, stats.checked],
-        [elements.checkedCount2, stats.checked],
-        [elements.correctCount, stats.correct],
-        [elements.wrongCount, stats.wrong],
-        [elements.aiCount, stats.ai]
+    const data = [
+
+
+        [elements.checkedCount,stats.checked],
+
+
+        [elements.checkedCount2,stats.checked],
+
+
+        [elements.correctCount,stats.correct],
+
+
+        [elements.wrongCount,stats.wrong],
+
+
+        [elements.aiCount,stats.ai]
+
 
     ];
 
-    mapping.forEach(([element,value])=>{
 
-        if(!element) return;
 
-        element.textContent = value;
+    data.forEach(([el,value])=>{
 
-        pulse(element);
 
-    });
+        if(el)
 
-    Storage.set("stats",stats);
+            el.textContent=value;
 
-}
-
-/*======================================
-  LOADING
-======================================*/
-
-function showLoading(container,text){
-
-    if(!container) return;
-
-    container.innerHTML = `
-        <div class="loading-box">
-
-            <div class="loader"></div>
-
-            <span>${text}</span>
-
-        </div>
-    `;
-
-}
-
-/*======================================
-  SUCCESS
-======================================*/
-
-function showSuccess(title,text){
-
-    if(!elements.result) return;
-
-    elements.result.innerHTML=`
-
-        <div class="success fade">
-
-            <h3>${title}</h3>
-
-            <p>${text}</p>
-
-        </div>
-
-    `;
-
-}
-
-/*======================================
-  ERROR
-======================================*/
-
-function showError(title,text){
-
-    if(!elements.result) return;
-
-    elements.result.innerHTML=`
-
-        <div class="error fade">
-
-            <h3>${title}</h3>
-
-            <p>${text}</p>
-
-        </div>
-
-    `;
-
-}
-
-/*======================================
-  REQUEST
-======================================*/
-
-async function request(url,data){
-
-    const response = await fetch(url,{
-
-        method:"POST",
-
-        headers:{
-            "Content-Type":"application/json"
-        },
-
-        body:JSON.stringify(data)
 
     });
 
-    if(!response.ok){
 
-        throw new Error(
-            `HTTP ${response.status}`
-        );
 
-    }
+    Storage.set(
 
-    return await response.json();
+        "stats",
 
-}
+        stats
 
-/*======================================
-  TOAST
-======================================*/
-
-function toast(message){
-
-    let box = document.querySelector(".toast");
-
-    if(!box){
-
-        box=document.createElement("div");
-
-        box.className="toast";
-
-        document.body.appendChild(box);
-
-    }
-
-    box.textContent=message;
-
-    box.classList.add("show");
-
-    clearTimeout(box.timer);
-
-    box.timer=setTimeout(()=>{
-
-        box.classList.remove("show");
-
-    },2200);
-
-}
-
-/*======================================
-  İLK YÜKLƏNMƏ
-======================================*/
-
-updateStats();
-/*======================================
-  SÖZ YOXLAMA
-======================================*/
-
-if (elements.checkBtn) {
-
-    elements.checkBtn.addEventListener("click", async () => {
-
-        const word = elements.wordInput?.value
-            .trim()
-            .replace(/\s+/g, " ");
-
-        if (!word) {
-
-            showError(
-                "⚠️ Söz daxil edin",
-                "Yoxlama aparmaq üçün əvvəl söz yazın."
-            );
-
-            return;
-        }
-
-        elements.checkBtn.disabled = true;
-        elements.checkBtn.classList.add("loading");
-
-        showLoading(
-            elements.result,
-            "Söz yoxlanılır..."
-        );
-
-        try {
-
-            const data = await request(
-                "/yoxla",
-                { word }
-            );
-
-            stats.checked++;
-
-            if (data.status === "correct") {
-
-                stats.correct++;
-
-                showSuccess(
-                    "✅ Düzgündür",
-                    data.word || word
-                );
-
-            } else {
-
-                stats.wrong++;
-
-                showError(
-                    "❌ Tapılmadı",
-                    data.message ||
-                    "Bu söz lüğətdə yoxdur."
-                );
-
-            }
-
-            updateStats();
-
-        } catch (error) {
-
-            console.error(error);
-
-            showError(
-                "❌ Server xətası",
-                "Serverə qoşulmaq mümkün olmadı."
-            );
-
-        } finally {
-
-            elements.checkBtn.disabled = false;
-            elements.checkBtn.classList.remove("loading");
-
-        }
-
-    });
-
-}
-
-/*======================================
-  ENTER İLƏ YOXLAMA
-======================================*/
-
-if (elements.wordInput) {
-
-    elements.wordInput.addEventListener("keydown", (e) => {
-
-        if (
-            e.key === "Enter" &&
-            !e.shiftKey
-        ) {
-
-            e.preventDefault();
-
-            elements.checkBtn?.click();
-
-        }
-
-    });
-
-}
-
-/*======================================
-  AI ANALİZ
-======================================*/
-
-if (elements.aiSearchBtn) {
-
-    elements.aiSearchBtn.addEventListener("click", async () => {
-
-        const word = elements.wordInput?.value
-            .trim()
-            .replace(/\s+/g, " ");
-
-        if (!word) {
-
-            elements.aiResult.innerHTML = `
-
-            <div class="ai-card-result error fade">
-
-                <h3>⚠️ Xəbərdarlıq</h3>
-
-                <p>Əvvəl söz yazın.</p>
-
-            </div>
-
-            `;
-
-            return;
-
-        }
-
-        elements.aiSearchBtn.disabled = true;
-
-        elements.aiSearchBtn.innerHTML = `
-            ⏳ Analiz edilir...
-        `;
-
-        elements.aiResult.innerHTML = `
-
-            <div class="ai-card-result fade">
-
-                <div class="loader"></div>
-
-                <h3>🤖 AI analiz edir...</h3>
-
-            </div>
-
-        `;
-
-        try {
-
-            const data = await request(
-                "/ai_axtar",
-                { word }
-            );
-
-            stats.ai++;
-
-            updateStats();
-
-            let aiData = null;
-
-            try {
-
-                aiData = JSON.parse(
-                    data.result
-                );
-
-            } catch {
-
-                aiData = null;
-
-            }
-
-            if (aiData) {
-
-                elements.aiResult.innerHTML = `
-
-                <div class="ai-card-result fade">
-
-                    <h3>🤖 AI Analizi</h3>
-
-                    <div class="ai-box">
-                        <span>✅ Düzgün yazılış</span>
-                        <p>${aiData.correct || "-"}</p>
-                    </div>
-
-                    <div class="ai-box">
-                        <span>📖 Mənası</span>
-                        <p>${aiData.meaning || "-"}</p>
-                    </div>
-
-                    <div class="ai-box">
-                        <span>🔤 Nitq hissəsi</span>
-                        <p>${aiData.part || "-"}</p>
-                    </div>
-
-                    <div class="ai-box">
-                        <span>📝 Nümunə</span>
-                        <p>${aiData.example || "-"}</p>
-                    </div>
-
-                </div>
-
-                `;
-
-            } else {
-
-                elements.aiResult.innerHTML = `
-
-                <div class="ai-card-result fade">
-
-                    <h3>🤖 AI Cavabı</h3>
-
-                    <p>${data.result}</p>
-
-                </div>
-
-                `;
-
-            }
-
-        } catch (error) {
-
-            console.error(error);
-
-            elements.aiResult.innerHTML = `
-
-            <div class="ai-card-result error fade">
-
-                <h3>❌ AI Xətası</h3>
-
-                <p>Serverlə əlaqə qurmaq mümkün olmadı.</p>
-
-            </div>
-
-            `;
-
-        } finally {
-
-            elements.aiSearchBtn.disabled = false;
-
-            elements.aiSearchBtn.innerHTML =
-                "🤖 AI ilə analiz et";
-
-        }
-
-    });
-
-}
-
-/*======================================
-  AI TƏMİZLƏ
-======================================*/
-
-if (elements.aiResult) {
-
-    elements.aiResult.innerHTML = "";
-
-}
-/*======================================
-  SEVİMLİLƏR
-======================================*/
-
-let favorites = Storage.get("favorites", []);
-
-function renderFavorites() {
-
-    if (!elements.favoritesList) return;
-
-    if (!favorites.length) {
-
-        elements.favoritesList.innerHTML = `
-            <p class="empty-favorite">
-                Hələ sevimli söz yoxdur.
-            </p>
-        `;
-
-        return;
-
-    }
-
-    elements.favoritesList.innerHTML = "";
-
-    favorites.forEach((word, index) => {
-
-        const item = document.createElement("div");
-
-        item.className = "favorite-item fade";
-
-        item.innerHTML = `
-
-            <span>⭐ ${word}</span>
-
-            <button
-                class="delete-favorite"
-                data-index="${index}"
-                title="Sil">
-
-                ✕
-
-            </button>
-
-        `;
-
-        elements.favoritesList.appendChild(item);
-
-    });
-
-}
-
-/*======================================
-  FAVORİT ƏLAVƏ ET
-======================================*/
-
-if (elements.favoriteBtn) {
-
-    elements.favoriteBtn.addEventListener("click", () => {
-
-        const word = elements.wordInput?.value
-            .trim()
-            .replace(/\s+/g, " ");
-
-        if (!word) {
-
-            toast("⚠️ Əvvəl söz daxil edin");
-
-            return;
-
-        }
-
-        const exists = favorites.some(
-            x => x.toLowerCase() === word.toLowerCase()
-        );
-
-        if (exists) {
-
-            toast("⭐ Bu söz artıq sevimlilərdədir");
-
-            return;
-
-        }
-
-        favorites.unshift(word);
-
-        if (favorites.length > 50) {
-
-            favorites.pop();
-
-        }
-
-        Storage.set("favorites", favorites);
-
-        renderFavorites();
-
-        toast("✅ Sevimlilərə əlavə edildi");
-
-    });
-
-}
-
-/*======================================
-  FAVORİT SİL
-======================================*/
-
-document.addEventListener("click", (e) => {
-
-    if (!e.target.classList.contains("delete-favorite"))
-        return;
-
-    const index = Number(
-        e.target.dataset.index
     );
 
-    favorites.splice(index, 1);
 
-    Storage.set("favorites", favorites);
+}
 
-    renderFavorites();
 
-    toast("🗑️ Silindi");
+
+updateStats();
+
+
+
+
+/*======================================
+ REQUEST
+======================================*/
+
+
+async function post(url,data){
+
+
+    const res = await fetch(
+
+        url,
+
+        {
+
+            method:"POST",
+
+            headers:{
+
+                "Content-Type":
+                "application/json"
+
+            },
+
+
+            body:
+            JSON.stringify(data)
+
+        }
+
+    );
+
+
+    return await res.json();
+
+
+}
+/*======================================
+ SÖZ YOXLAMA
+======================================*/
+
+
+if(elements.checkBtn){
+
+
+elements.checkBtn.addEventListener(
+"click",
+async()=>{
+
+
+const word =
+elements.wordInput.value
+.trim();
+
+
+
+if(!word){
+
+elements.result.innerHTML =
+`
+<div class="error">
+
+⚠️ Söz daxil edin
+
+</div>
+`;
+
+return;
+
+}
+
+
+
+try{
+
+
+const data = await post(
+
+"/yoxla",
+
+{word}
+
+);
+
+
+
+stats.checked++;
+
+
+
+if(data.status==="correct"){
+
+
+stats.correct++;
+
+
+elements.result.innerHTML =
+`
+<div class="success">
+
+<h3>✅ Düzgündür</h3>
+
+<p>${data.word}</p>
+
+</div>
+`;
+
+
+}
+
+else{
+
+
+stats.wrong++;
+
+
+elements.result.innerHTML =
+`
+<div class="error">
+
+<h3>❌ Tapılmadı</h3>
+
+<p>${data.message}</p>
+
+</div>
+`;
+
+}
+
+
+
+updateStats();
+
+
+
+}catch(error){
+
+
+console.error(error);
+
+
+elements.result.innerHTML =
+`
+<div class="error">
+
+Server xətası
+
+</div>
+`;
+
+}
+
 
 });
 
-renderFavorites();
+
+}
+
+
+
+
 
 /*======================================
-  TEMA
+ AI ANALİZ OLLAMA
 ======================================*/
 
-const themeBtn = document.querySelector(".theme");
+
+if(elements.aiSearchBtn){
+
+
+elements.aiSearchBtn.addEventListener(
+"click",
+async()=>{
+
+
+const word =
+elements.wordInput.value
+.trim();
+
+
+
+if(!word){
+
+elements.aiResult.innerHTML =
+`
+<div class="error">
+
+Əvvəl söz yazın
+
+</div>
+`;
+
+return;
+
+}
+
+
+
+elements.aiSearchBtn.disabled=true;
+
+
+elements.aiSearchBtn.innerHTML=
+"⏳ Analiz edilir...";
+
+
+
+elements.aiResult.innerHTML =
+`
+<div class="ai-card-result">
+
+🤖 AI analiz edir...
+
+</div>
+`;
+
+
+
+try{
+
+
+const data = await post(
+
+"/ai_axtar",
+
+{word}
+
+);
+
+
+
+stats.ai++;
+
+updateStats();
+
+
+
+elements.aiResult.innerHTML =
+`
+
+<div class="ai-card-result fade">
+
+
+<h3>🤖 AI Analizi</h3>
+
+
+
+<div class="ai-box">
+
+<span>✅ Düzgün yazılış</span>
+
+<p>
+${data.correct || "-"}
+</p>
+
+</div>
+
+
+
+<div class="ai-box">
+
+<span>📖 Mənası</span>
+
+<p>
+${data.meaning || "-"}
+</p>
+
+</div>
+
+
+
+<div class="ai-box">
+
+<span>🔤 Nitq hissəsi</span>
+
+<p>
+${data.part || "-"}
+</p>
+
+</div>
+
+
+
+<div class="ai-box">
+
+<span>📝 Nümunə</span>
+
+<p>
+${data.example || "-"}
+</p>
+
+</div>
+
+
+
+</div>
+
+`;
+
+
+
+}catch(error){
+
+
+console.error(error);
+
+
+elements.aiResult.innerHTML =
+`
+<div class="error">
+
+❌ AI cavabı alınmadı
+
+</div>
+`;
+
+
+
+}finally{
+
+
+elements.aiSearchBtn.disabled=false;
+
+
+elements.aiSearchBtn.innerHTML=
+"🤖 AI ilə analiz et";
+
+
+}
+
+
+
+});
+
+
+}
+/*======================================
+ ENTER İLƏ YOXLAMA
+======================================*/
+
+
+if(elements.wordInput){
+
+
+elements.wordInput.addEventListener(
+
+"keydown",
+
+(e)=>{
+
+
+if(e.key==="Enter"){
+
+e.preventDefault();
+
+elements.checkBtn?.click();
+
+}
+
+
+}
+
+);
+
+
+}
+
+
+
+
+/*======================================
+ FAVORİLƏR
+======================================*/
+
+
+let favorites = Storage.get(
+
+"favorites",
+
+[]
+
+);
+
+
+
+function renderFavorites(){
+
+
+if(!elements.favoritesList)
+return;
+
+
+
+if(favorites.length===0){
+
+
+elements.favoritesList.innerHTML=
+`
+<p>
+Hələ sevimli söz yoxdur.
+</p>
+`;
+
+return;
+
+}
+
+
+
+elements.favoritesList.innerHTML="";
+
+
+
+favorites.forEach((word,index)=>{
+
+
+const div =
+document.createElement("div");
+
+
+
+div.className =
+"favorite-item";
+
+
+
+div.innerHTML=
+`
+
+<span>
+⭐ ${word}
+</span>
+
+
+<button 
+class="delete-favorite"
+data-index="${index}">
+❌
+</button>
+
+`;
+
+
+
+elements.favoritesList.appendChild(div);
+
+
+
+});
+
+
+}
+
+
+
+
+
+if(elements.favoriteBtn){
+
+
+elements.favoriteBtn.addEventListener(
+
+"click",
+
+()=>{
+
+
+const word =
+elements.wordInput.value
+.trim();
+
+
+
+if(!word)
+return;
+
+
+
+if(!favorites.includes(word)){
+
+
+favorites.unshift(word);
+
+
+Storage.set(
+
+"favorites",
+
+favorites
+
+);
+
+
+renderFavorites();
+
+
+}
+
+
+}
+
+);
+
+
+}
+
+
+
+
+
+document.addEventListener(
+
+"click",
+
+(e)=>{
+
+
+if(
+e.target.classList.contains(
+"delete-favorite"
+)
+
+){
+
+
+const index =
+Number(
+e.target.dataset.index
+);
+
+
+
+favorites.splice(
+
+index,
+
+1
+
+);
+
+
+
+Storage.set(
+
+"favorites",
+
+favorites
+
+);
+
+
+
+renderFavorites();
+
+
+
+}
+
+
+
+}
+
+);
+
+
+
+renderFavorites();
+/*======================================
+ TEMA
+======================================*/
+
+
+const themeBtn =
+document.querySelector(".theme");
+
 
 
 if(themeBtn){
 
-    themeBtn.addEventListener("click",()=>{
 
-        document.body.classList.toggle("theme-gold");
+themeBtn.addEventListener(
 
-        toast("🎨 Mövzu dəyişdirildi");
+"click",
 
-    });
+()=>{
+
+
+document.body.classList.toggle(
+"theme-gold"
+);
+
 
 }
 
+
+);
+
+
+}
+
+
+
+
+
 /*======================================
-  AUTO FOCUS
+ AUTO FOCUS
 ======================================*/
 
-elements.wordInput?.focus();
+
+if(elements.wordInput){
+
+elements.wordInput.focus();
+
+}
+
+
+
+
 
 /*======================================
-  PAGE ANIMATION
+ SƏHİFƏ ANİMASİYASI
 ======================================*/
 
-const observer = new IntersectionObserver(entries=>{
 
-    entries.forEach(entry=>{
+const observer =
+new IntersectionObserver(
 
-        if(entry.isIntersecting){
+(entries)=>{
 
-            entry.target.classList.add("show");
 
-        }
+entries.forEach(entry=>{
 
-    });
 
-},{
-    threshold:.15
+if(entry.isIntersecting){
+
+
+entry.target.classList.add(
+"show"
+);
+
+
+}
+
+
+
 });
+
+
+},
+
+{
+
+threshold:0.15
+
+}
+
+);
+
+
 
 document.querySelectorAll(
 
-    ".feature,.stat-card,.hero-right,.favorites-section"
+".feature,.stat-card,.hero-right,.favorites-section"
 
 ).forEach(el=>{
 
-    el.classList.add("hidden");
 
-    observer.observe(el);
+el.classList.add(
+"hidden"
+);
+
+
+observer.observe(el);
+
+
 
 });
 
-/*======================================
-  END
-======================================*/
+
+
+
 
 });
