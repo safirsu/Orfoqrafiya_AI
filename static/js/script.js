@@ -1,166 +1,303 @@
 document.addEventListener("DOMContentLoaded", () => {
 "use strict";
 
-/* ==========================
-   ELEMENTLƏR
-========================== */
+/*======================================
+  DOM ELEMENTLƏRİ
+======================================*/
 
 const $ = (id) => document.getElementById(id);
 
-const wordInput = $("word");
-const checkBtn = $("checkBtn");
-const result = $("result");
-const favoriteBtn = $("favoriteBtn");
-const favoritesList = $("favoritesList");
-const aiSearchBtn = $("aiSearchBtn");
-const aiResult = $("aiResult");
+const elements = {
 
-const checkedCount = $("checkedCount");
-const checkedCount2 = $("checkedCount2");
-const correctCount = $("correctCount");
-const wrongCount = $("wrongCount");
-const aiCount = $("aiCount");
+    wordInput: $("word"),
+    checkBtn: $("checkBtn"),
+    result: $("result"),
 
-/* ==========================
-   STORAGE
-========================== */
+    favoriteBtn: $("favoriteBtn"),
+    favoritesList: $("favoritesList"),
 
-const Storage = {
-    get(key, def) {
-        try {
-            return JSON.parse(localStorage.getItem(key)) ?? def;
-        } catch {
-            return def;
-        }
-    },
+    aiSearchBtn: $("aiSearchBtn"),
+    aiResult: $("aiResult"),
 
-    set(key, value) {
-        localStorage.setItem(key, JSON.stringify(value));
-    }
+    checkedCount: $("checkedCount"),
+    checkedCount2: $("checkedCount2"),
+    correctCount: $("correctCount"),
+    wrongCount: $("wrongCount"),
+    aiCount: $("aiCount")
+
 };
 
-/* ==========================
-   STATİSTİKA
-========================== */
+/*======================================
+  STORAGE
+======================================*/
 
-let stats = Storage.get("stats", {
-    checked: 0,
-    correct: 0,
-    wrong: 0,
-    ai: 0
+const Storage = {
+
+    get(key, defaultValue){
+
+        try{
+
+            const value = localStorage.getItem(key);
+
+            return value
+                ? JSON.parse(value)
+                : defaultValue;
+
+        }catch(error){
+
+            console.warn("Storage read error:", error);
+
+            return defaultValue;
+
+        }
+
+    },
+
+    set(key,value){
+
+        try{
+
+            localStorage.setItem(
+                key,
+                JSON.stringify(value)
+            );
+
+        }catch(error){
+
+            console.warn("Storage write error:", error);
+
+        }
+
+    }
+
+};
+
+/*======================================
+  STATİSTİKA
+======================================*/
+
+let stats = Storage.get("stats",{
+
+    checked:0,
+    correct:0,
+    wrong:0,
+    ai:0
+
 });
 
-function animate(el) {
-    if (!el) return;
+/*======================================
+  ANİMASİYA
+======================================*/
 
-    el.classList.remove("pulse");
+function pulse(element){
 
-    void el.offsetWidth;
+    if(!element) return;
 
-    el.classList.add("pulse");
+    element.classList.remove("pulse");
+
+    void element.offsetWidth;
+
+    element.classList.add("pulse");
+
 }
 
-function updateStats() {
+/*======================================
+  STATİSTİKANI YENİLƏ
+======================================*/
 
-    if (checkedCount) {
-        checkedCount.textContent = stats.checked;
-        animate(checkedCount);
-    }
+function updateStats(){
 
-    if (checkedCount2) {
-        checkedCount2.textContent = stats.checked;
-        animate(checkedCount2);
-    }
+    const mapping = [
 
-    if (correctCount) {
-        correctCount.textContent = stats.correct;
-        animate(correctCount);
-    }
+        [elements.checkedCount, stats.checked],
+        [elements.checkedCount2, stats.checked],
+        [elements.correctCount, stats.correct],
+        [elements.wrongCount, stats.wrong],
+        [elements.aiCount, stats.ai]
 
-    if (wrongCount) {
-        wrongCount.textContent = stats.wrong;
-        animate(wrongCount);
-    }
+    ];
 
-    if (aiCount) {
-        aiCount.textContent = stats.ai;
-        animate(aiCount);
-    }
+    mapping.forEach(([element,value])=>{
 
-    Storage.set("stats", stats);
+        if(!element) return;
+
+        element.textContent = value;
+
+        pulse(element);
+
+    });
+
+    Storage.set("stats",stats);
+
 }
+
+/*======================================
+  LOADING
+======================================*/
+
+function showLoading(container,text){
+
+    if(!container) return;
+
+    container.innerHTML = `
+        <div class="loading-box">
+
+            <div class="loader"></div>
+
+            <span>${text}</span>
+
+        </div>
+    `;
+
+}
+
+/*======================================
+  SUCCESS
+======================================*/
+
+function showSuccess(title,text){
+
+    if(!elements.result) return;
+
+    elements.result.innerHTML=`
+
+        <div class="success fade">
+
+            <h3>${title}</h3>
+
+            <p>${text}</p>
+
+        </div>
+
+    `;
+
+}
+
+/*======================================
+  ERROR
+======================================*/
+
+function showError(title,text){
+
+    if(!elements.result) return;
+
+    elements.result.innerHTML=`
+
+        <div class="error fade">
+
+            <h3>${title}</h3>
+
+            <p>${text}</p>
+
+        </div>
+
+    `;
+
+}
+
+/*======================================
+  REQUEST
+======================================*/
+
+async function request(url,data){
+
+    const response = await fetch(url,{
+
+        method:"POST",
+
+        headers:{
+            "Content-Type":"application/json"
+        },
+
+        body:JSON.stringify(data)
+
+    });
+
+    if(!response.ok){
+
+        throw new Error(
+            `HTTP ${response.status}`
+        );
+
+    }
+
+    return await response.json();
+
+}
+
+/*======================================
+  TOAST
+======================================*/
+
+function toast(message){
+
+    let box = document.querySelector(".toast");
+
+    if(!box){
+
+        box=document.createElement("div");
+
+        box.className="toast";
+
+        document.body.appendChild(box);
+
+    }
+
+    box.textContent=message;
+
+    box.classList.add("show");
+
+    clearTimeout(box.timer);
+
+    box.timer=setTimeout(()=>{
+
+        box.classList.remove("show");
+
+    },2200);
+
+}
+
+/*======================================
+  İLK YÜKLƏNMƏ
+======================================*/
 
 updateStats();
+/*======================================
+  SÖZ YOXLAMA
+======================================*/
 
-/* ==========================
-   KÖMƏKÇİLƏR
-========================== */
+if (elements.checkBtn) {
 
-function showLoading(el, text) {
+    elements.checkBtn.addEventListener("click", async () => {
 
-    if (!el) return;
-
-    el.innerHTML = `
-        <div class="loading-box">
-            <div class="loader"></div>
-            <span>${text}</span>
-        </div>
-    `;
-}
-
-function showSuccess(title, text) {
-
-    result.innerHTML = `
-        <div class="success fade">
-            <h3>${title}</h3>
-            <p>${text}</p>
-        </div>
-    `;
-}
-
-function showError(title, text) {
-
-    result.innerHTML = `
-        <div class="error fade">
-            <h3>${title}</h3>
-            <p>${text}</p>
-        </div>
-    `;
-}
-
-function request(url, body) {
-
-    return fetch(url, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(body)
-    }).then(r => r.json());
-}
-/* ==========================
-   SÖZ YOXLAMA (PREMIUM)
-========================== */
-
-if (checkBtn) {
-
-    checkBtn.addEventListener("click", async () => {
-
-        const word = wordInput.value.trim();
+        const word = elements.wordInput?.value
+            .trim()
+            .replace(/\s+/g, " ");
 
         if (!word) {
-            showError("⚠️ Söz daxil edin", "Yoxlama aparmaq üçün əvvəl söz yazın.");
+
+            showError(
+                "⚠️ Söz daxil edin",
+                "Yoxlama aparmaq üçün əvvəl söz yazın."
+            );
+
             return;
         }
 
-        checkBtn.disabled = true;
-        showLoading(result, "Söz yoxlanılır...");
+        elements.checkBtn.disabled = true;
+        elements.checkBtn.classList.add("loading");
+
+        showLoading(
+            elements.result,
+            "Söz yoxlanılır..."
+        );
 
         try {
 
-            const data = await request("/yoxla", {
-                word: word
-            });
+            const data = await request(
+                "/yoxla",
+                { word }
+            );
 
             stats.checked++;
 
@@ -179,16 +316,17 @@ if (checkBtn) {
 
                 showError(
                     "❌ Tapılmadı",
-                    data.message || "Bu söz lüğətdə yoxdur."
+                    data.message ||
+                    "Bu söz lüğətdə yoxdur."
                 );
 
             }
 
             updateStats();
 
-        } catch (err) {
+        } catch (error) {
 
-            console.error(err);
+            console.error(error);
 
             showError(
                 "❌ Server xətası",
@@ -197,7 +335,8 @@ if (checkBtn) {
 
         } finally {
 
-            checkBtn.disabled = false;
+            elements.checkBtn.disabled = false;
+            elements.checkBtn.classList.remove("loading");
 
         }
 
@@ -205,127 +344,172 @@ if (checkBtn) {
 
 }
 
-/* ==========================
-   ENTER İLƏ YOXLAMA
-========================== */
+/*======================================
+  ENTER İLƏ YOXLAMA
+======================================*/
 
-if (wordInput) {
+if (elements.wordInput) {
 
-    wordInput.addEventListener("keydown", (e) => {
+    elements.wordInput.addEventListener("keydown", (e) => {
 
-        if (e.key === "Enter") {
+        if (
+            e.key === "Enter" &&
+            !e.shiftKey
+        ) {
 
             e.preventDefault();
 
-            if (checkBtn && !checkBtn.disabled) {
-                checkBtn.click();
-            }
+            elements.checkBtn?.click();
 
         }
 
     });
 
 }
-/* ==========================
-   AI ANALİZ (PREMIUM)
-========================== */
 
-if (aiSearchBtn) {
+/*======================================
+  AI ANALİZ
+======================================*/
 
-    aiSearchBtn.addEventListener("click", async () => {
+if (elements.aiSearchBtn) {
 
-        const word = wordInput.value.trim();
+    elements.aiSearchBtn.addEventListener("click", async () => {
+
+        const word = elements.wordInput?.value
+            .trim()
+            .replace(/\s+/g, " ");
 
         if (!word) {
 
-            aiResult.innerHTML = `
-                <div class="ai-card-result error fade">
-                    <h3>⚠️ Xəbərdarlıq</h3>
-                    <p>Əvvəl söz yazın.</p>
-                </div>
+            elements.aiResult.innerHTML = `
+
+            <div class="ai-card-result error fade">
+
+                <h3>⚠️ Xəbərdarlıq</h3>
+
+                <p>Əvvəl söz yazın.</p>
+
+            </div>
+
             `;
+
             return;
+
         }
 
-        aiSearchBtn.disabled = true;
+        elements.aiSearchBtn.disabled = true;
 
-        aiResult.innerHTML = `
+        elements.aiSearchBtn.innerHTML = `
+            ⏳ Analiz edilir...
+        `;
+
+        elements.aiResult.innerHTML = `
+
             <div class="ai-card-result fade">
+
                 <div class="loader"></div>
+
                 <h3>🤖 AI analiz edir...</h3>
+
             </div>
+
         `;
 
         try {
 
-            const data = await request("/ai_axtar", {
-                word: word
-            });
+            const data = await request(
+                "/ai_axtar",
+                { word }
+            );
 
             stats.ai++;
+
             updateStats();
 
             let aiData = null;
 
             try {
-                aiData = JSON.parse(data.result);
-            } catch (_) {}
+
+                aiData = JSON.parse(
+                    data.result
+                );
+
+            } catch {
+
+                aiData = null;
+
+            }
 
             if (aiData) {
 
-                aiResult.innerHTML = `
-                    <div class="ai-card-result fade">
+                elements.aiResult.innerHTML = `
 
-                        <h3>🤖 AI Analizi</h3>
+                <div class="ai-card-result fade">
 
-                        <div class="ai-box">
-                            <span>✅ Düzgün yazılış</span>
-                            <p>${aiData.correct || "-"}</p>
-                        </div>
+                    <h3>🤖 AI Analizi</h3>
 
-                        <div class="ai-box">
-                            <span>📖 Mənası</span>
-                            <p>${aiData.meaning || "-"}</p>
-                        </div>
-
-                        <div class="ai-box">
-                            <span>🔤 Nitq hissəsi</span>
-                            <p>${aiData.part || "-"}</p>
-                        </div>
-
-                        <div class="ai-box">
-                            <span>📝 Nümunə cümlə</span>
-                            <p>${aiData.example || "-"}</p>
-                        </div>
-
+                    <div class="ai-box">
+                        <span>✅ Düzgün yazılış</span>
+                        <p>${aiData.correct || "-"}</p>
                     </div>
+
+                    <div class="ai-box">
+                        <span>📖 Mənası</span>
+                        <p>${aiData.meaning || "-"}</p>
+                    </div>
+
+                    <div class="ai-box">
+                        <span>🔤 Nitq hissəsi</span>
+                        <p>${aiData.part || "-"}</p>
+                    </div>
+
+                    <div class="ai-box">
+                        <span>📝 Nümunə</span>
+                        <p>${aiData.example || "-"}</p>
+                    </div>
+
+                </div>
+
                 `;
 
             } else {
 
-                aiResult.innerHTML = `
-                    <div class="ai-card-result fade">
-                        <h3>🤖 AI Cavabı</h3>
-                        <p>${data.result || "AI cavabı alınmadı."}</p>
-                    </div>
+                elements.aiResult.innerHTML = `
+
+                <div class="ai-card-result fade">
+
+                    <h3>🤖 AI Cavabı</h3>
+
+                    <p>${data.result}</p>
+
+                </div>
+
                 `;
 
             }
 
-        } catch (err) {
+        } catch (error) {
 
-            console.error(err);
+            console.error(error);
 
-            aiResult.innerHTML = `
-                <div class="ai-card-result error fade">
-                    <h3>❌ AI Xətası</h3>
-                    <p>Serverlə əlaqə qurmaq mümkün olmadı.</p>
-                </div>
+            elements.aiResult.innerHTML = `
+
+            <div class="ai-card-result error fade">
+
+                <h3>❌ AI Xətası</h3>
+
+                <p>Serverlə əlaqə qurmaq mümkün olmadı.</p>
+
+            </div>
+
             `;
 
         } finally {
 
-            aiSearchBtn.disabled = false;
+            elements.aiSearchBtn.disabled = false;
+
+            elements.aiSearchBtn.innerHTML =
+                "🤖 AI ilə analiz et";
 
         }
 
@@ -333,136 +517,235 @@ if (aiSearchBtn) {
 
 }
 
-if (aiResult) {
-    aiResult.innerHTML = "";
+/*======================================
+  AI TƏMİZLƏ
+======================================*/
+
+if (elements.aiResult) {
+
+    elements.aiResult.innerHTML = "";
+
 }
-/* ==========================
-   SEVİMLİLƏR
-========================== */
+/*======================================
+  SEVİMLİLƏR
+======================================*/
 
 let favorites = Storage.get("favorites", []);
 
-function showFavorites() {
+function renderFavorites() {
 
-    if (!favoritesList) return;
+    if (!elements.favoritesList) return;
 
     if (!favorites.length) {
-        favoritesList.innerHTML =
-            `<p class="empty-favorite">Hələ sevimli söz yoxdur.</p>`;
+
+        elements.favoritesList.innerHTML = `
+            <p class="empty-favorite">
+                Hələ sevimli söz yoxdur.
+            </p>
+        `;
+
         return;
+
     }
 
-    favoritesList.innerHTML = "";
+    elements.favoritesList.innerHTML = "";
 
     favorites.forEach((word, index) => {
 
         const item = document.createElement("div");
+
         item.className = "favorite-item fade";
 
         item.innerHTML = `
+
             <span>⭐ ${word}</span>
-            <button class="delete-favorite" data-index="${index}">
+
+            <button
+                class="delete-favorite"
+                data-index="${index}"
+                title="Sil">
+
                 ✕
+
             </button>
+
         `;
 
-        favoritesList.appendChild(item);
-    });
-
-    document.querySelectorAll(".delete-favorite").forEach(btn => {
-
-        btn.onclick = () => {
-
-            favorites.splice(btn.dataset.index, 1);
-
-            Storage.set("favorites", favorites);
-
-            showFavorites();
-
-        };
+        elements.favoritesList.appendChild(item);
 
     });
 
 }
 
-showFavorites();
+/*======================================
+  FAVORİT ƏLAVƏ ET
+======================================*/
 
-if (favoriteBtn) {
+if (elements.favoriteBtn) {
 
-    favoriteBtn.addEventListener("click", () => {
+    elements.favoriteBtn.addEventListener("click", () => {
 
-        const word = wordInput.value.trim();
+        const word = elements.wordInput?.value
+            .trim()
+            .replace(/\s+/g, " ");
 
-        if (!word) return;
+        if (!word) {
 
-        if (favorites.includes(word)) return;
+            toast("⚠️ Əvvəl söz daxil edin");
+
+            return;
+
+        }
+
+        const exists = favorites.some(
+            x => x.toLowerCase() === word.toLowerCase()
+        );
+
+        if (exists) {
+
+            toast("⭐ Bu söz artıq sevimlilərdədir");
+
+            return;
+
+        }
 
         favorites.unshift(word);
 
-        if (favorites.length > 100)
+        if (favorites.length > 50) {
+
             favorites.pop();
+
+        }
 
         Storage.set("favorites", favorites);
 
-        showFavorites();
+        renderFavorites();
+
+        toast("✅ Sevimlilərə əlavə edildi");
 
     });
 
 }
 
-/* ==========================
-   TEMA
-========================== */
+/*======================================
+  FAVORİT SİL
+======================================*/
+
+document.addEventListener("click", (e) => {
+
+    if (!e.target.classList.contains("delete-favorite"))
+        return;
+
+    const index = Number(
+        e.target.dataset.index
+    );
+
+    favorites.splice(index, 1);
+
+    Storage.set("favorites", favorites);
+
+    renderFavorites();
+
+    toast("🗑️ Silindi");
+
+});
+
+renderFavorites();
+
+/*======================================
+  TEMA
+======================================*/
 
 const themeBtn = document.querySelector(".theme");
 
 const themes = [
+
     "theme-aurora",
     "theme-gold",
     "theme-emerald",
     "theme-arctic"
+
 ];
 
-function changeTheme(theme) {
+function applyTheme(theme){
 
     document.body.classList.remove(...themes);
 
     document.body.classList.add(theme);
 
-    localStorage.setItem("theme", theme);
+    Storage.set("theme", theme);
 
 }
 
-const savedTheme = localStorage.getItem("theme");
+const savedTheme = Storage.get(
+    "theme",
+    "theme-aurora"
+);
 
-if (savedTheme && themes.includes(savedTheme)) {
-    changeTheme(savedTheme);
-}
+applyTheme(savedTheme);
 
-if (themeBtn) {
+if(themeBtn){
 
-    themeBtn.addEventListener("click", () => {
+    themeBtn.addEventListener("click",()=>{
 
-        const current =
-            themes.find(t => document.body.classList.contains(t));
+        const current = themes.find(theme=>
+            document.body.classList.contains(theme)
+        );
 
-        const next =
-            themes[(themes.indexOf(current) + 1) % themes.length];
+        const index = themes.indexOf(current);
 
-        changeTheme(next);
+        const next = themes[
+            (index+1)%themes.length
+        ];
+
+        applyTheme(next);
+
+        toast("🎨 Mövzu dəyişdirildi");
 
     });
 
 }
 
-/* ==========================
-   AUTO FOCUS
-========================== */
+/*======================================
+  AUTO FOCUS
+======================================*/
 
-wordInput?.focus();
+elements.wordInput?.focus();
 
-/* ==========================
-   END
-========================== */
+/*======================================
+  PAGE ANIMATION
+======================================*/
+
+const observer = new IntersectionObserver(entries=>{
+
+    entries.forEach(entry=>{
+
+        if(entry.isIntersecting){
+
+            entry.target.classList.add("show");
+
+        }
+
+    });
+
+},{
+    threshold:.15
+});
+
+document.querySelectorAll(
+
+    ".feature,.stat-card,.hero-right,.favorites-section"
+
+).forEach(el=>{
+
+    el.classList.add("hidden");
+
+    observer.observe(el);
+
+});
+
+/*======================================
+  END
+======================================*/
 
 });

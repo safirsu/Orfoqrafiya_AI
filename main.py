@@ -147,6 +147,9 @@ def index():
 
 @app.route("/oyun")
 def oyun():
+@app.route("/2048")
+def game2048():
+    return render_template("2048.html")
 
     return render_template(
         "oyun.html"
