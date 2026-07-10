@@ -2,50 +2,50 @@ import requests
 import json
 
 
+OLLAMA_URL = "http://localhost:11434/api/generate"
+MODEL = "qwen2.5:7b"
+
+
 def analyze_word(word):
 
     prompt = f"""
-Sən Azərbaycan dili üzrə peşəkar müəllimsən.
+Sən Azərbaycan dili üzrə köməkçisən.
 
 Söz:
 {word}
 
-Yalnız JSON formatında cavab ver:
+Yalnız bunları yaz:
+
+1. Düzgün yazılış
+2. Qısa və düzgün məna
+3. Həmin sözlə nümunə cümlə
+
+Qaydalar:
+- Azərbaycan dilində cavab ver.
+- Sözün mənasını uydurma.
+- Nümunə cümlədə mütləq "{word}" sözü olsun.
+- Başqa söz haqqında yazma.
+
+Yalnız JSON qaytar:
 
 {{
 "correct":"",
 "meaning":"",
-"part":"",
 "example":""
 }}
-
-Qaydalar:
-- Düzgün Azərbaycan dilində yaz.
-- Nitq hissəsini dəqiq göstər.
-- Sözün mənasını qısa və düzgün yaz.
-- Azərbaycan dilində real nümunə cümlə yaz.
-- Əlavə izah yazma.
 """
 
 
     try:
 
         response = requests.post(
-
-            "http://localhost:11434/api/generate",
-
+            OLLAMA_URL,
             json={
-
-                "model":"qwen2.5:7b",
-
-                "prompt":prompt,
-
-                "stream":False
-
+                "model": MODEL,
+                "prompt": prompt,
+                "stream": False
             },
-
-            timeout=120
-
+            timeout=180
         )
 
 
@@ -87,15 +87,12 @@ Qaydalar:
                 "-"
             ),
 
-            "part": data.get(
-                "part",
-                "-"
-            ),
-
             "example": data.get(
                 "example",
                 "-"
-            )
+            ),
+
+            "part": ""
 
         }
 
@@ -103,19 +100,19 @@ Qaydalar:
     except Exception as e:
 
         print(
-            "OLLAMA ERROR:",
+            "AI ERROR:",
             e
         )
 
 
         return {
 
-            "correct":word,
+            "correct": word,
 
             "meaning":"-",
 
-            "part":"-",
+            "example":"-",
 
-            "example":"-"
+            "part":""
 
         }

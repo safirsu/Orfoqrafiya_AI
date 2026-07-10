@@ -431,41 +431,6 @@ ${data.correct || "-"}
 
 
 
-<div class="ai-box">
-
-<span>📖 Mənası</span>
-
-<p>
-${data.meaning || "-"}
-</p>
-
-</div>
-
-
-
-<div class="ai-box">
-
-<span>🔤 Nitq hissəsi</span>
-
-<p>
-${data.part || "-"}
-</p>
-
-</div>
-
-
-
-<div class="ai-box">
-
-<span>📝 Nümunə</span>
-
-<p>
-${data.example || "-"}
-</p>
-
-</div>
-
-
 
 </div>
 
