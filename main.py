@@ -5,6 +5,7 @@ import os
 import random
 
 from difflib import get_close_matches
+from rapidfuzz import process, fuzz
 
 from ai import analyze_word
 
@@ -282,19 +283,20 @@ def yoxla():
 
         })
 
+    # Oxşar sözləri tap
+    suggestions = []
 
-
-    suggestions = get_close_matches(
-
+    matches = process.extract(
         word,
-
-        list(WORDS),
-
-        n=5,
-
-        cutoff=0.60
-
+        WORDS,
+        scorer=fuzz.WRatio,
+        limit=5
     )
+
+    for match, score, _ in matches:
+        if score >= 45:
+            suggestions.append(match)
+
 
 
 

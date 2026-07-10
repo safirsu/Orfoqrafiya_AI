@@ -73,7 +73,6 @@ const Storage = {
     },
 
 
-
     set(key,value){
 
 
@@ -210,6 +209,9 @@ async function post(url,data){
 
 
 }
+
+
+
 /*======================================
  SÖZ YOXLAMA
 ======================================*/
@@ -230,6 +232,7 @@ elements.wordInput.value
 
 
 if(!word){
+
 
 elements.result.innerHTML =
 `
@@ -289,6 +292,33 @@ else{
 stats.wrong++;
 
 
+let suggestionHTML = "";
+
+
+if(data.suggestions && data.suggestions.length > 0){
+
+
+suggestionHTML = `
+
+<div class="suggestions">
+
+<h4>💡 Bəlkə bunu nəzərdə tutursunuz?</h4>
+
+${data.suggestions.map(word => `
+
+<button class="suggest-word">
+${word}
+</button>
+
+`).join("")}
+
+</div>
+
+`;
+
+}
+
+
 elements.result.innerHTML =
 `
 <div class="error">
@@ -297,11 +327,12 @@ elements.result.innerHTML =
 
 <p>${data.message}</p>
 
+${suggestionHTML}
+
 </div>
 `;
 
 }
-
 
 
 updateStats();
@@ -330,13 +361,8 @@ Server xətası
 
 
 }
-
-
-
-
-
 /*======================================
- AI ANALİZ OLLAMA
+ AI ANALİZ
 ======================================*/
 
 
@@ -355,6 +381,7 @@ elements.wordInput.value
 
 
 if(!word){
+
 
 elements.aiResult.innerHTML =
 `
@@ -405,6 +432,7 @@ const data = await post(
 
 stats.ai++;
 
+
 updateStats();
 
 
@@ -431,6 +459,41 @@ ${data.correct || "-"}
 
 
 
+<div class="ai-box">
+
+<span>📖 Mənası</span>
+
+<p>
+${data.meaning || "-"}
+</p>
+
+</div>
+
+
+
+<div class="ai-box">
+
+<span>🔤 Nitq hissəsi</span>
+
+<p>
+${data.part || "-"}
+</p>
+
+</div>
+
+
+
+<div class="ai-box">
+
+<span>📝 Nümunə</span>
+
+<p>
+${data.example || "-"}
+</p>
+
+</div>
+
+
 
 </div>
 
@@ -442,6 +505,7 @@ ${data.correct || "-"}
 
 
 console.error(error);
+
 
 
 elements.aiResult.innerHTML =
@@ -473,6 +537,9 @@ elements.aiSearchBtn.innerHTML=
 
 
 }
+
+
+
 /*======================================
  ENTER İLƏ YOXLAMA
 ======================================*/
@@ -490,9 +557,12 @@ elements.wordInput.addEventListener(
 
 if(e.key==="Enter"){
 
+
 e.preventDefault();
 
+
 elements.checkBtn?.click();
+
 
 }
 
@@ -507,6 +577,41 @@ elements.checkBtn?.click();
 
 
 
+
+/*======================================
+ TƏKLİF EDİLƏN SÖZƏ BASMA
+======================================*/
+
+
+document.addEventListener(
+
+"click",
+
+(e)=>{
+
+
+if(
+e.target.classList.contains(
+"suggest-word"
+)
+
+){
+
+
+elements.wordInput.value =
+e.target.textContent.trim();
+
+
+
+elements.checkBtn.click();
+
+
+}
+
+
+}
+
+);
 /*======================================
  FAVORİLƏR
 ======================================*/
@@ -526,6 +631,7 @@ function renderFavorites(){
 
 
 if(!elements.favoritesList)
+
 return;
 
 
@@ -563,7 +669,7 @@ div.className =
 
 
 
-div.innerHTML=
+div.innerHTML =
 `
 
 <span>
@@ -605,12 +711,12 @@ elements.favoriteBtn.addEventListener(
 
 
 const word =
-elements.wordInput.value
-.trim();
+elements.wordInput.value.trim();
 
 
 
 if(!word)
+
 return;
 
 
@@ -628,6 +734,7 @@ Storage.set(
 favorites
 
 );
+
 
 
 renderFavorites();
@@ -704,6 +811,11 @@ renderFavorites();
 
 
 renderFavorites();
+
+
+
+
+
 /*======================================
  TEMA
 ======================================*/
@@ -729,6 +841,7 @@ document.body.classList.toggle(
 );
 
 
+
 }
 
 
@@ -748,7 +861,9 @@ document.body.classList.toggle(
 
 if(elements.wordInput){
 
+
 elements.wordInput.focus();
+
 
 }
 
@@ -781,19 +896,24 @@ entry.target.classList.add(
 }
 
 
-
 });
 
 
 },
 
+
 {
+
 
 threshold:0.15
 
+
 }
 
+
 );
+
+
 
 
 
@@ -805,8 +925,11 @@ document.querySelectorAll(
 
 
 el.classList.add(
+
 "hidden"
+
 );
+
 
 
 observer.observe(el);
