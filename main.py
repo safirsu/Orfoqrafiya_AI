@@ -1,118 +1,67 @@
 from flask import Flask, render_template, request, jsonify
+from dotenv import load_dotenv
+from openai import OpenAI
+
 import json
 import os
 import random
 from difflib import get_close_matches
 
-from dotenv import load_dotenv
-from openai import OpenAI
 
-
-# ==========================
+# ======================================
 # ENV
-# ==========================
+# ======================================
 
 load_dotenv()
 
 api_key = os.getenv("OPENAI_API_KEY")
 
-client = None
+client = OpenAI(api_key=api_key) if api_key else None
 
-if api_key:
-    client = OpenAI(
-        api_key=api_key
-    )
 
+# ======================================
+# FLASK
+# ======================================
 
 app = Flask(__name__)
 
 
-# ==========================
-# LÜĞƏT
-# ==========================
+# ======================================
+# PATHLAR
+# ======================================
 
-DATA_FILE = os.path.join(
-    "data",
-    "orfo_luget.json"
-)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+DATA_DIR = os.path.join(BASE_DIR, "data")
 
-def load_words():
+DATA_FILE = os.path.join(DATA_DIR, "orfo_luget.json")
 
-    try:
-
-        with open(
-            DATA_FILE,
-            "r",
-            encoding="utf-8"
-        ) as f:
-
-            data = json.load(f)
-
-            if isinstance(data, list):
-
-                return set(
-                    str(x).lower()
-                    for x in data
-                )
-
-            if isinstance(data, dict):
-
-                return set(
-                    str(x).lower()
-                    for x in data.keys()
-                )
-
-    except Exception as e:
-
-        print(
-            "Lüğət xətası:",
-            e
-        )
-
-    return set()
+FAVORITE_FILE = os.path.join(DATA_DIR, "favorites.json")
 
 
+# ======================================
+# KÖMƏKÇİ FUNKSİYALAR
+# ======================================
 
-WORDS = load_words()
-
-
-
-# ==========================
-# FAVORİLƏR
-# ==========================
-
-FAVORITE_FILE = os.path.join(
-    "data",
-    "favorites.json"
-)
-
-
-def load_favorites():
+def load_json(path, default):
 
     try:
-
-        with open(
-            FAVORITE_FILE,
-            "r",
-            encoding="utf-8"
-        ) as f:
-
+        with open(path, "r", encoding="utf-8") as f:
             return json.load(f)
 
-    except:
-
-        return []
-
+    except (FileNotFoundError, json.JSONDecodeError):
+        return default
 
 
-def save_favorites(data):
 
-    with open(
-        FAVORITE_FILE,
-        "w",
-        encoding="utf-8"
-    ) as f:
+def save_json(path, data):
+
+    os.makedirs(
+        os.path.dirname(path),
+        exist_ok=True
+    )
+
+    with open(path, "w", encoding="utf-8") as f:
 
         json.dump(
             data,
@@ -122,19 +71,71 @@ def save_favorites(data):
         )
 
 
+# ======================================
+# LÜĞƏT
+# ======================================
 
-FAVORITES = load_favorites()
+raw_words = load_json(
+    DATA_FILE,
+    []
+)
 
+
+if isinstance(raw_words, list):
+
+    WORDS = {
+
+        str(word).strip().lower()
+
+        for word in raw_words
+
+        if str(word).strip()
+
+    }
+
+
+elif isinstance(raw_words, dict):
+
+    WORDS = {
+
+        str(word).strip().lower()
+
+        for word in raw_words.keys()
+
+        if str(word).strip()
+
+    }
+
+
+else:
+
+    WORDS = set()
+
+
+
+# ======================================
+# FAVORİLƏR
+# ======================================
+
+FAVORITES = load_json(
+    FAVORITE_FILE,
+    []
+)
+
+
+# ======================================
+# STATİSTİKA
+# ======================================
 
 checked_count = 0
+
 game_count = 0
 
 
 
-# ==========================
+# ======================================
 # SƏHİFƏLƏR
-# ==========================
-
+# ======================================
 
 @app.route("/")
 def index():
@@ -144,52 +145,56 @@ def index():
     )
 
 
+@app.route("/luget")
+def luget():
+
+    return render_template(
+        "luget.html"
+    )
+
 
 @app.route("/oyun")
 def oyun():
-@app.route("/2048")
-def game2048():
-    return render_template("2048.html")
 
     return render_template(
         "oyun.html"
     )
 
 
-
-@app.route("/luget")
-def luget():
+@app.route("/2048")
+def game2048():
 
     return render_template(
-        "luget.html"
-    )# ==========================
-# OYUN SÖZLƏRİ
-# ==========================
-
+        "2048.html"
+    )
+# ======================================
+# OYUN API
+# ======================================
 
 @app.route("/api/game-words")
 def game_words():
 
-    words = list(WORDS)
-
     words = [
-        w for w in words
-        if 4 <= len(w) <= 12
+
+        word
+
+        for word in WORDS
+
+        if 4 <= len(word) <= 12
+
     ]
 
+    random.shuffle(words)
+
     return jsonify(
-        random.sample(
-            words,
-            min(10, len(words))
-        )
+        words[:10]
     )
 
 
 
-# ==========================
+# ======================================
 # LÜĞƏT API
-# ==========================
-
+# ======================================
 
 @app.route("/api/dictionary")
 def dictionary():
@@ -197,23 +202,29 @@ def dictionary():
     query = request.args.get(
         "q",
         ""
-    ).lower()
+    ).strip().lower()
 
 
-    results = []
+    if not query:
+
+        return jsonify({
+
+            "count": len(WORDS),
+
+            "results": []
+
+        })
 
 
-    for word in WORDS:
+    results = [
 
-        if query in word:
+        word
 
-            results.append(word)
+        for word in WORDS
 
+        if query in word
 
-        if len(results) >= 30:
-
-            break
-
+    ][:30]
 
 
     return jsonify({
@@ -226,28 +237,37 @@ def dictionary():
 
 
 
-
-# ==========================
+# ======================================
 # SÖZ YOXLAMA
-# ==========================
+# ======================================
 
-
-@app.route(
-    "/yoxla",
-    methods=["POST"]
-)
+@app.route("/yoxla", methods=["POST"])
 def yoxla():
 
     global checked_count
 
 
-    data = request.get_json()
+    data = request.get_json(
+        silent=True
+    ) or {}
 
 
     word = data.get(
         "word",
         ""
     ).strip().lower()
+
+
+
+    if not word:
+
+        return jsonify({
+
+            "status": "error",
+
+            "message": "Söz daxil edilməyib."
+
+        }), 400
 
 
 
@@ -263,8 +283,7 @@ def yoxla():
 
             "word": word,
 
-            "message":
-            "✅ Söz düzgündür"
+            "message": "✅ Söz düzgündür"
 
         })
 
@@ -288,31 +307,26 @@ def yoxla():
 
         "status": "incorrect",
 
-        "message":
-        "❌ Söz lüğətdə tapılmadı",
+        "message": "❌ Söz lüğətdə tapılmadı.",
 
-        "suggestions":
-        suggestions
+        "suggestions": suggestions
 
     })
 
 
 
-
-
-# ==========================
+# ======================================
 # AI ANALİZ
-# ==========================
+# ======================================
 
-
-@app.route(
-    "/ai_axtar",
-    methods=["POST"]
-)
+@app.route("/ai_axtar", methods=["POST"])
 def ai_axtar():
 
 
-    data = request.get_json()
+    data = request.get_json(
+        silent=True
+    ) or {}
+
 
 
     word = data.get(
@@ -328,14 +342,11 @@ def ai_axtar():
 
             "correct": "",
 
-            "meaning":
-            "Söz daxil edilməyib",
+            "meaning": "Söz daxil edilməyib.",
 
-            "part":
-            "-",
+            "part": "-",
 
-            "example":
-            "-"
+            "example": "-"
 
         })
 
@@ -345,17 +356,13 @@ def ai_axtar():
 
         return jsonify({
 
-            "correct":
-            word,
+            "correct": word,
 
-            "meaning":
-            "API açarı yoxdur",
+            "meaning": "OpenAI API açarı tapılmadı.",
 
-            "part":
-            "-",
+            "part": "-",
 
-            "example":
-            "-"
+            "example": "-"
 
         })
 
@@ -368,27 +375,33 @@ def ai_axtar():
 
             model="gpt-4o-mini",
 
+
             messages=[
 
                 {
 
-                    "role":"system",
+                    "role": "system",
 
                     "content":
                     """
-Azərbaycan dili üzrə söz analizi et.
-Cavabı yalnız JSON formatında ver.
-                    """
+Sən Azərbaycan dili üzrə orfoqrafiya köməkçisisən.
+
+Cavabı yalnız JSON formatında qaytar.
+
+Əlavə izah yazma.
+"""
 
                 },
 
+
                 {
 
-                    "role":"user",
+                    "role": "user",
 
-                    "content":
-                    f"""
+                    "content": f"""
+
 Söz: {word}
+
 
 Format:
 
@@ -398,11 +411,15 @@ Format:
 "part":"",
 "example":""
 }}
-                    """
+
+"""
 
                 }
 
-            ]
+            ],
+
+
+            temperature=0.2
 
         )
 
@@ -412,13 +429,17 @@ Format:
 
 
 
-        cleaned = answer.replace(
-            "```json",
-            ""
-        ).replace(
-            "```",
-            ""
-        ).strip()
+        cleaned = (
+
+            answer
+
+            .replace("```json", "")
+
+            .replace("```", "")
+
+            .strip()
+
+        )
 
 
 
@@ -439,22 +460,19 @@ Format:
 
         return jsonify({
 
-            "correct":
-            word,
+            "correct": word,
 
-            "meaning":
-            "AI cavabı alınmadı",
+            "meaning": "AI cavabı alınmadı.",
 
-            "part":
-            "-",
+            "part": "-",
 
-            "example":
-            "-"
+            "example": "-"
 
-        })# ==========================
-# FAVORİLƏR
-# ==========================
-
+        })
+    
+# ======================================
+# FAVORİLƏR API
+# ======================================
 
 @app.route("/favoriler")
 def favoriler():
@@ -465,13 +483,12 @@ def favoriler():
 
 
 
-@app.route(
-    "/favori_elave",
-    methods=["POST"]
-)
+@app.route("/favori_elave", methods=["POST"])
 def favori_elave():
 
-    data = request.get_json()
+    data = request.get_json(
+        silent=True
+    ) or {}
 
 
     word = data.get(
@@ -481,11 +498,24 @@ def favori_elave():
 
 
 
-    if word and word not in FAVORITES:
+    if not word:
+
+        return jsonify({
+
+            "status": "error",
+
+            "message": "Söz boşdur."
+
+        }), 400
+
+
+
+    if word not in FAVORITES:
 
         FAVORITES.append(word)
 
-        save_favorites(
+        save_json(
+            FAVORITE_FILE,
             FAVORITES
         )
 
@@ -493,24 +523,21 @@ def favori_elave():
 
     return jsonify({
 
-        "status":"ok",
+        "status": "ok",
 
-        "favorites":
-        FAVORITES
+        "favorites": FAVORITES
 
     })
 
 
 
 
-
-@app.route(
-    "/favori_sil",
-    methods=["POST"]
-)
+@app.route("/favori_sil", methods=["POST"])
 def favori_sil():
 
-    data = request.get_json()
+    data = request.get_json(
+        silent=True
+    ) or {}
 
 
     word = data.get(
@@ -524,7 +551,8 @@ def favori_sil():
 
         FAVORITES.remove(word)
 
-        save_favorites(
+        save_json(
+            FAVORITE_FILE,
             FAVORITES
         )
 
@@ -532,63 +560,45 @@ def favori_sil():
 
     return jsonify({
 
-        "status":"ok",
+        "status": "ok",
 
-        "favorites":
-        FAVORITES
+        "favorites": FAVORITES
 
     })
 
 
 
-
-
-# ==========================
+# ======================================
 # STATİSTİKA
-# ==========================
-
+# ======================================
 
 @app.route("/api/stats")
 def stats():
 
     return jsonify({
 
-        "words":
-        len(WORDS),
+        "words": len(WORDS),
 
-        "checked":
-        checked_count,
+        "checked": checked_count,
 
-        "games":
-        game_count
+        "games": game_count
 
     })
 
 
 
-
-
-# ==========================
+# ======================================
 # START
-# ==========================
-
+# ======================================
 
 if __name__ == "__main__":
 
     app.run(
 
-        debug=True,
+        host="0.0.0.0",
 
-        port=5000
+        port=5000,
 
-    )
-   # ==========================
-# START
-# ==========================
+        debug=True
 
-if __name__ == "__main__":
-
-    app.run(
-        debug=True,
-        port=5000
     )

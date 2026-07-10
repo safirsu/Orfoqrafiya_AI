@@ -658,47 +658,12 @@ renderFavorites();
 
 const themeBtn = document.querySelector(".theme");
 
-const themes = [
-
-    "theme-aurora",
-    "theme-gold",
-    "theme-emerald",
-    "theme-arctic"
-
-];
-
-function applyTheme(theme){
-
-    document.body.classList.remove(...themes);
-
-    document.body.classList.add(theme);
-
-    Storage.set("theme", theme);
-
-}
-
-const savedTheme = Storage.get(
-    "theme",
-    "theme-aurora"
-);
-
-applyTheme(savedTheme);
 
 if(themeBtn){
 
     themeBtn.addEventListener("click",()=>{
 
-        const current = themes.find(theme=>
-            document.body.classList.contains(theme)
-        );
-
-        const index = themes.indexOf(current);
-
-        const next = themes[
-            (index+1)%themes.length
-        ];
-
-        applyTheme(next);
+        document.body.classList.toggle("theme-gold");
 
         toast("🎨 Mövzu dəyişdirildi");
 
